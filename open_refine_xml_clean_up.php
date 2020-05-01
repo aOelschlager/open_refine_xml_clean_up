@@ -17,20 +17,16 @@ Script to clean up text file from open refine.
 
         dirToArray($dir);
     }
-        
-    function dirToArray($dir) {
-      $cdir = scandir($dir);
 
-      $counter = 0;
-      $print_array = array();
+    function dirToArray($dir) {
+
+      $cdir = scandir($dir);
 
       foreach ($cdir as $key => $value) {
 
          if (!in_array($value,array(".",".."))) {
 
             if (is_dir($dir . DIRECTORY_SEPARATOR . $value)) {
-
-               $counter = 0;
 
                dirToArray($dir . DIRECTORY_SEPARATOR . $value);
 
@@ -39,15 +35,15 @@ Script to clean up text file from open refine.
                $val_exten = strtolower($val_exten);
 
                if ($val_exten === "txt") {
-                   $counter += 1;
-                   write_file($value, $dir);
+
+                   write_file($value);
                }
             }
          }
       }
    }
 
-   function write_file($value, $dir) {
+   function write_file($value) {
       $delim = "*";
       $lines = file($value);
       $count = 1;
@@ -58,13 +54,13 @@ Script to clean up text file from open refine.
       $file = fopen($new_file, 'w');
 
       foreach($lines as $line) {
-         
+
          if (trim($delim) === trim($line)) {
             $count += 1;
             fclose($file);
-            
+
             clean_xml_null($new_file);
-            
+
             $file_name = pathinfo($value, PATHINFO_FILENAME);
             $new_file =  $file_name . "_" . $count . ".xml";
             $file = fopen($new_file, 'w');
@@ -76,13 +72,13 @@ Script to clean up text file from open refine.
       }
       fclose($file);
    }
-   
+
    function clean_xml_null($new_file) {
-      
+
       $xml = simplexml_load_file($new_file, null, LIBXML_NOBLANKS);
-      
+
       $remove = $xml->xpath("//mods:subject[mods:topic='null']");
-      
+
       foreach ( $remove as $item ) {
          unset($item[0]);
       }
@@ -92,7 +88,7 @@ Script to clean up text file from open refine.
       foreach ( $remove2 as $item ) {
          unset($item[0]);
       }
-      
+
       $domDocument = dom_import_simplexml($xml)->ownerDocument;
       $domDocument->formatOutput = true;
       $domDocument->save($new_file);
